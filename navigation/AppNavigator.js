@@ -5,9 +5,9 @@ import { AuthContext } from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import DashboardScreen from '../screens/DashboardScreen';
+// import DashboardScreen from '../screens/DashboardScreen';
 import SplashScreen from '../screens/SplashScreen';
-import DriverTabs from './BottomTabs';
+import DriverTabs from './DriverTabs';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,7 +21,6 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {userToken ? (
-        // <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name="Main" component={DriverTabs} options={{ headerShown: false }} />
       ) : (
         <>

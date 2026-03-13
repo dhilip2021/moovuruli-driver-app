@@ -1,15 +1,13 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-
   const [userToken, setUserToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const login = (token) => {
+  const login = token => {
     setUserToken(token);
-    setLoading(false);
   };
 
   const logout = () => {
@@ -19,7 +17,6 @@ export const AuthProvider = ({ children }) => {
   const stopLoading = () => {
     setLoading(false);
   };
-
   return (
     <AuthContext.Provider
       value={{
@@ -27,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         loading,
-        stopLoading
+        stopLoading,
       }}
     >
       {children}
