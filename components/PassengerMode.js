@@ -7,6 +7,7 @@ import MapView, { Marker } from 'react-native-maps';
 export default function PassengerMode({ mode }) {
 
   const mapRef = useRef(null);
+  const watchId = useRef(null);
 
   const [driverLocation, setDriverLocation] = useState({
     latitude: 13.0827,
@@ -14,97 +15,89 @@ export default function PassengerMode({ mode }) {
   });
 
   const [heading, setHeading] = useState(0);
-  const watchId = useRef(null);
 
-
-
-  // start GPS tracking
   const startTracking = () => {
-
-    Geolocation.getCurrentPosition(
-      position => {
-
-        const { latitude, longitude, heading } = position.coords;
-
-        setDriverLocation({ latitude, longitude });
-
-        setHeading(heading ? Number(heading) : 0);
-
-      },
-      error => console.log('GPS ERROR', error),
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000,
-      }
-    );
 
     watchId.current = Geolocation.watchPosition(
       position => {
 
         const { latitude, longitude, heading } = position.coords;
 
-        console.log("Driver Location:", latitude, longitude);
+        console.log("GPS UPDATE:", latitude, longitude);
 
-        setDriverLocation({
+        const newLocation = {
           latitude,
           longitude,
-        });
+        };
+
+        setDriverLocation(newLocation);
 
         setHeading(heading ? Number(heading) : 0);
 
-        // smooth map follow
         if (mapRef.current) {
           mapRef.current.animateCamera({
-            center: {
-              latitude,
-              longitude,
-            },
+            center: newLocation,
             zoom: 17,
           });
         }
 
       },
-      error => console.log('Watch error', error),
+      error => {
+        console.log("GPS ERROR:", error);
+      },
       {
         enableHighAccuracy: true,
-        distanceFilter: 5,
-        interval: 3000,
-        fastestInterval: 2000,
+        distanceFilter: 1,
+        interval: 2000,
+        fastestInterval: 1000,
+        forceRequestLocation: true,
+        showLocationDialog: true,
       }
     );
   };
 
-useEffect(() => {
+  useEffect(() => {
 
-  const requestLocationPermission = async () => {
+    const requestLocationPermission = async () => {
 
-    try {
+      try {
 
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        startTracking();
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+
+          console.log("Location Permission Granted");
+
+          startTracking();
+
+        } else {
+
+          console.log("Location Permission Denied");
+
+        }
+
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (mode === 'passenger') {
+      requestLocationPermission();
+    }
+
+    return () => {
+
+      if (watchId.current !== null) {
+
+        Geolocation.clearWatch(watchId.current);
+
       }
 
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    };
 
-  if (mode === 'passenger') {
-    requestLocationPermission();
-  }
-
-  return () => {
-    if (watchId.current !== null) {
-      Geolocation.clearWatch(watchId.current);
-    }
-  };
-
-}, [mode]);
+  }, [mode]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -113,8 +106,8 @@ useEffect(() => {
         ref={mapRef}
         style={{ flex: 1 }}
         provider="google"
-        showsUserLocation
-        followsUserLocation
+        showsUserLocation={true}
+        followsUserLocation={true}
         initialRegion={{
           latitude: driverLocation.latitude,
           longitude: driverLocation.longitude,
