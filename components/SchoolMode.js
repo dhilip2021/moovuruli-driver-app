@@ -1,121 +1,142 @@
-import React from "react";
+/* eslint-disable react/self-closing-comp */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-native/no-inline-styles */
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
-  StyleSheet
-} from "react-native";
+  StyleSheet,
+} from 'react-native';
+import MapView from 'react-native-maps';
 
 export default function SchoolMode({
   tripStarted,
   setTripStarted,
   list,
   pickupStudent,
-  dropStudent
+  dropStudent,
 }) {
+
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        School Trip: {tripStarted ? "Running" : "Not Started"}
-      </Text>
+    <View style={{ flex: 1 }}>
+      <MapView
+        style={{ flex: 1 }}
+        provider="google"
+        showsUserLocation
+        followsUserLocation
+        region={{
+          latitude:  13.0827,
+          longitude:  80.2707,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+      ></MapView>
 
-      {!tripStarted && (
-        <TouchableOpacity
-          style={styles.startBtn}
-          onPress={() => setTripStarted(true)}
-        >
-          <Text style={styles.btnText}>Start Trip</Text>
-        </TouchableOpacity>
-      )}
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          School Trip: {tripStarted ? 'Running' : 'Not Started'}
+        </Text>
 
-      {tripStarted && (
-        <FlatList
-          data={list}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.studentCard}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text>{item.status}</Text>
+        {!tripStarted && (
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={() => setTripStarted(true)}
+          >
+            <Text style={styles.btnText}>Start Trip</Text>
+          </TouchableOpacity>
+        )}
 
-              <View style={styles.row}>
-                <TouchableOpacity
-                  style={styles.pickBtn}
-                  onPress={() => pickupStudent(item.id)}
-                >
-                  <Text style={styles.btnText}>Pickup</Text>
-                </TouchableOpacity>
+        {tripStarted && (
+          <FlatList
+            data={list}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.studentCard}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text>{item.status}</Text>
 
-                <TouchableOpacity
-                  style={styles.dropBtn}
-                  onPress={() => dropStudent(item.id)}
-                >
-                  <Text style={styles.btnText}>Drop</Text>
-                </TouchableOpacity>
+                <View style={styles.row}>
+                  <TouchableOpacity
+                    style={styles.pickBtn}
+                    onPress={() => pickupStudent(item.id)}
+                  >
+                    <Text style={styles.btnText}>Pickup</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.dropBtn}
+                    onPress={() => dropStudent(item.id)}
+                  >
+                    <Text style={styles.btnText}>Drop</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )}
-        />
-      )}
+            )}
+          />
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
+    position: 'absolute',
     top: 100,
-    width: "100%",
-    backgroundColor: "#fff",
+    width: '100%',
+    backgroundColor: '#fff',
     padding: 20,
     borderTopLeftRadius: 20,
-    borderTopRightRadius: 20
+    borderTopRightRadius: 20,
   },
 
   title: {
     fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 
   startBtn: {
-    backgroundColor: "#2e7d32",
+    backgroundColor: '#2e7d32',
     padding: 10,
     borderRadius: 6,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   studentCard: {
-    backgroundColor: "#f4f4f4",
+    backgroundColor: '#f4f4f4',
     padding: 10,
     borderRadius: 8,
-    marginTop: 10
+    marginTop: 10,
   },
 
   name: {
     fontSize: 16,
-    fontWeight: "bold"
+    fontWeight: 'bold',
   },
 
   row: {
-    flexDirection: "row",
-    marginTop: 5
+    flexDirection: 'row',
+    marginTop: 5,
   },
 
   pickBtn: {
-    backgroundColor: "#2196f3",
+    backgroundColor: '#2196f3',
     padding: 8,
     borderRadius: 6,
-    marginRight: 10
+    marginRight: 10,
   },
 
   dropBtn: {
-    backgroundColor: "#f44336",
+    backgroundColor: '#f44336',
     padding: 8,
-    borderRadius: 6
+    borderRadius: 6,
   },
 
   btnText: {
-    color: "#fff"
-  }
+    color: '#fff',
+  },
 });

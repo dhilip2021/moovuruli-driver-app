@@ -2,9 +2,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
-import Geolocation from 'react-native-geolocation-service';
 import React, { useEffect, useState } from 'react';
-import { PermissionsAndroid } from 'react-native';
 import AppHeader from '../components/AppHeader';
 import SideBarPassenger from '../components/SideBarPassenger';
 import SideBarSchool from '../components/SideBarSchool';
@@ -20,18 +18,14 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import AutoIcon from '../assets/images/autorickshaw.png';
+
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [mode, setMode] = useState(null);
   const [tripStarted, setTripStarted] = useState(false);
   const [showModePopup, setShowModePopup] = useState(false);
   const [online, setOnline] = useState(false);
-  const [driverLocation, setDriverLocation] = useState({
-    latitude: 13.0827,
-    longitude: 80.2707,
-  });
-  const [heading, setHeading] = useState(0);
+
   const students = [
     { id: '1', name: 'Arun', status: 'Waiting' },
     { id: '2', name: 'Karthik', status: 'Waiting' },
@@ -51,82 +45,7 @@ export default function HomeScreen() {
       prev.map(s => (s.id === id ? { ...s, status: 'Dropped' } : s)),
     );
   };
-  const getCurrentLocation = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude, heading } = position.coords;
 
-        setDriverLocation({
-          latitude,
-          longitude,
-        });
-
-        setHeading(heading ?? 0);
-      },
-      error => console.log(error),
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000,
-      },
-    );
-  };
-  const requestLocationPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      ]);
-
-      if (
-        granted['android.permission.ACCESS_FINE_LOCATION'] ===
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        getCurrentLocation();
-      } else {
-        console.log('Location permission denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
-  };
-
-  useEffect(() => {
-    let watchId;
-
-    if (mode === 'passenger') {
-      watchId = Geolocation.watchPosition(
-        position => {
-          const { latitude, longitude, heading } = position.coords;
-
-          setDriverLocation({
-            latitude,
-            longitude,
-          });
-
-          setHeading(heading ?? 0);
-        },
-        error => {
-          console.log('Location error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          distanceFilter: 10,
-          interval: 5000,
-          fastestInterval: 2000,
-        },
-      );
-    }
-
-    return () => {
-      if (watchId !== undefined) {
-        Geolocation.clearWatch(watchId);
-      }
-    };
-  }, [mode]);
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
   return (
     <View style={{ flex: 1 }}>
       {/* HEADER */}
@@ -146,40 +65,24 @@ export default function HomeScreen() {
           }
         }}
       />
-
-      {/* <MapView
-        style={{ flex: 1 }}
+    {
+!online && 
+<MapView
+        style={{ flex: 1, opacity: online ? 1 : 0.4 }}
         provider="google"
         showsUserLocation={true}
-        followsUserLocation={true}
         initialRegion={{
           latitude: 13.0827,
           longitude: 80.2707,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-      >
-        {mode === 'passenger' &&
-          driverLocation?.latitude &&
-          driverLocation?.longitude && (
-            <Marker
-              coordinate={{
-                latitude: driverLocation.latitude,
-                longitude: driverLocation.longitude,
-              }}
-              rotation={heading || 0}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <Image
-                source={AutoIcon}
-                style={{ width: 40, height: 40, resizeMode: 'contain' }}
-              />
-            </Marker>
-          )}
-      </MapView> */}
+      />
+}
+      
 
       {/* SIDEBAR PASSENGER */}
-      {mode === 'passenger' && driverLocation && (
+      {mode === 'passenger' && (
         <SideBarPassenger
           visible={menuVisible}
           closeMenu={() => setMenuVisible(false)}
@@ -238,7 +141,7 @@ export default function HomeScreen() {
       </Modal>
 
       {/* PASSENGER MODE */}
-      {mode === 'passenger' && driverLocation && <PassengerMode />}
+      {mode === 'passenger' && <PassengerMode mode={mode} />}
 
       {/* SCHOOL MODE */}
       {mode === 'school' && (
@@ -350,7 +253,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#ffffff',
+    color: '#717171ff',
   },
 
   goOnlineBtn: {

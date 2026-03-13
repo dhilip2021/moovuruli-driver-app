@@ -5,7 +5,7 @@ import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import MapView, { Marker } from 'react-native-maps';
 
-export default function RideRequestScreen() {
+export default function RideRequestScreen1() {
   const [menuVisible, setMenuVisible] = useState(false);
   return (
     <View style={{ flex: 1 }}>
