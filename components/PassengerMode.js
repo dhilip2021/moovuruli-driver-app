@@ -1,147 +1,147 @@
-/* eslint-disable eslint-comments/no-unused-disable */
 /* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/self-closing-comp */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-shadow */
-/* eslint-disable no-unused-vars */
-
 import Geolocation from 'react-native-geolocation-service';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { PermissionsAndroid } from 'react-native';
 
 export default function PassengerMode({ mode }) {
+
+  const mapRef = useRef(null);
+
   const [driverLocation, setDriverLocation] = useState({
     latitude: 13.0827,
     longitude: 80.2707,
   });
-  const [heading, setHeading] = useState(0);
 
-  const getCurrentLocation = () => {
+  const [heading, setHeading] = useState(0);
+  const watchId = useRef(null);
+
+
+
+  // start GPS tracking
+  const startTracking = () => {
+
     Geolocation.getCurrentPosition(
       position => {
+
         const { latitude, longitude, heading } = position.coords;
+
+        setDriverLocation({ latitude, longitude });
+
+        setHeading(heading ? Number(heading) : 0);
+
+      },
+      error => console.log('GPS ERROR', error),
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      }
+    );
+
+    watchId.current = Geolocation.watchPosition(
+      position => {
+
+        const { latitude, longitude, heading } = position.coords;
+
+        console.log("Driver Location:", latitude, longitude);
 
         setDriverLocation({
           latitude,
           longitude,
         });
 
-        setHeading(heading ?? 0);
+        setHeading(heading ? Number(heading) : 0);
+
+        // smooth map follow
+        if (mapRef.current) {
+          mapRef.current.animateCamera({
+            center: {
+              latitude,
+              longitude,
+            },
+            zoom: 17,
+          });
+        }
+
       },
-      error => console.log(error),
+      error => console.log('Watch error', error),
       {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000,
-      },
+        distanceFilter: 5,
+        interval: 3000,
+        fastestInterval: 2000,
+      }
     );
   };
 
+useEffect(() => {
+
   const requestLocationPermission = async () => {
+
     try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      ]);
 
-      const fineGranted =
-        granted['android.permission.ACCESS_FINE_LOCATION'] ===
-        PermissionsAndroid.RESULTS.GRANTED;
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
 
-      const coarseGranted =
-        granted['android.permission.ACCESS_COARSE_LOCATION'] ===
-        PermissionsAndroid.RESULTS.GRANTED;
-
-      if (fineGranted || coarseGranted) {
-        getCurrentLocation();
-      } else {
-        console.log('Location permission denied');
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        startTracking();
       }
+
     } catch (err) {
-      console.warn(err);
+      console.log(err);
     }
   };
 
-  useEffect(() => {
-    let watchId;
-
-    if (mode === 'passenger') {
-      watchId = Geolocation.watchPosition(
-        position => {
-          const { latitude, longitude, heading } = position.coords;
-
-          if (latitude && longitude) {
-            setDriverLocation({ latitude, longitude });
-          }
-
-          setHeading(Number(heading) || 0);
-        },
-        error => {
-          console.log('Location error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          distanceFilter: 10,
-          interval: 5000,
-          fastestInterval: 2000,
-        },
-      );
-    }
-
-    return () => {
-      if (watchId) {
-        Geolocation.clearWatch(watchId);
-      }
-    };
-  }, [mode]);
-
-  useEffect(() => {
+  if (mode === 'passenger') {
     requestLocationPermission();
-  }, []);
+  }
+
+  return () => {
+    if (watchId.current !== null) {
+      Geolocation.clearWatch(watchId.current);
+    }
+  };
+
+}, [mode]);
 
   return (
     <View style={{ flex: 1 }}>
+
       <MapView
+        ref={mapRef}
         style={{ flex: 1 }}
         provider="google"
         showsUserLocation
         followsUserLocation
-        region={{
-          latitude: driverLocation?.latitude || 13.0827,
-          longitude: driverLocation?.longitude || 80.2707,
+        initialRegion={{
+          latitude: driverLocation.latitude,
+          longitude: driverLocation.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
       >
- {mode === 'passenger' &&
-          driverLocation?.latitude &&
-          driverLocation?.longitude && (
-            <Marker
-              coordinate={{
-                latitude: driverLocation.latitude,
-                longitude: driverLocation.longitude,
-              }}
-              rotation={Number(heading) || 0}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              {/* <Image
-                source={AutoIcon}
-                style={{ width: 40, height: 40, resizeMode: 'contain' }}
-              /> */}
-            </Marker>
-          )}
-</MapView>
+
+        <Marker
+          coordinate={driverLocation}
+          rotation={heading}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+      </MapView>
+
       <View style={styles.container}>
         <Text style={styles.title}>Passenger Mode Active</Text>
         <Text>Waiting for ride requests...</Text>
       </View>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     position: 'absolute',
     top: 100,
@@ -157,4 +157,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
+
 });

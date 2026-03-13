@@ -1,23 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-shadow */
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import AppHeader from '../components/AppHeader';
 import SideBarPassenger from '../components/SideBarPassenger';
 import SideBarSchool from '../components/SideBarSchool';
-import MapView, { Marker } from 'react-native-maps';
+import MapView from 'react-native-maps';
 import PassengerMode from '../components/PassengerMode';
 import SchoolMode from '../components/SchoolMode';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -26,33 +14,13 @@ export default function HomeScreen() {
   const [showModePopup, setShowModePopup] = useState(false);
   const [online, setOnline] = useState(false);
 
-  const students = [
-    { id: '1', name: 'Arun', status: 'Waiting' },
-    { id: '2', name: 'Karthik', status: 'Waiting' },
-    { id: '3', name: 'Priya', status: 'Waiting' },
-  ];
-
-  const [list, setList] = useState(students);
-
-  const pickupStudent = id => {
-    setList(prev =>
-      prev.map(s => (s.id === id ? { ...s, status: 'Picked' } : s)),
-    );
-  };
-
-  const dropStudent = id => {
-    setList(prev =>
-      prev.map(s => (s.id === id ? { ...s, status: 'Dropped' } : s)),
-    );
-  };
-
   return (
     <View style={{ flex: 1 }}>
-      {/* HEADER */}
+      
       <AppHeader
         title="Driver Dashboard"
         onMenuPress={() => setMenuVisible(true)}
-        showSwitch={online}
+        showSwitch={true}
         online={online}
         onToggleOnline={val => {
           setOnline(val);
@@ -65,12 +33,12 @@ export default function HomeScreen() {
           }
         }}
       />
-    {
-!online && 
-<MapView
+
+      {/* MAP ALWAYS RENDER */}
+      <MapView
         style={{ flex: 1, opacity: online ? 1 : 0.4 }}
         provider="google"
-        showsUserLocation={true}
+        showsUserLocation
         initialRegion={{
           latitude: 13.0827,
           longitude: 80.2707,
@@ -78,16 +46,15 @@ export default function HomeScreen() {
           longitudeDelta: 0.01,
         }}
       />
-}
-      
 
-      {/* SIDEBAR PASSENGER */}
+      {/* SIDEBARS */}
       {mode === 'passenger' && (
         <SideBarPassenger
           visible={menuVisible}
           closeMenu={() => setMenuVisible(false)}
         />
       )}
+
       {mode === 'school' && (
         <SideBarSchool
           visible={menuVisible}
@@ -95,6 +62,7 @@ export default function HomeScreen() {
         />
       )}
 
+      {/* OFFLINE SCREEN */}
       {!online && (
         <View style={styles.offlineContainer}>
           <Text style={styles.offlineText}>You are Offline</Text>
@@ -111,7 +79,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* MODE POPUP */}
+      {/* MODE SELECT POPUP */}
       <Modal visible={showModePopup} transparent animationType="slide">
         <View style={styles.popupContainer}>
           <View style={styles.popup}>
@@ -140,18 +108,10 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* PASSENGER MODE */}
+      {/* MODE COMPONENTS */}
       {mode === 'passenger' && <PassengerMode mode={mode} />}
-
-      {/* SCHOOL MODE */}
       {mode === 'school' && (
-        <SchoolMode
-          tripStarted={tripStarted}
-          setTripStarted={setTripStarted}
-          list={list}
-          pickupStudent={pickupStudent}
-          dropStudent={dropStudent}
-        />
+        <SchoolMode tripStarted={tripStarted} setTripStarted={setTripStarted} />
       )}
     </View>
   );
@@ -186,64 +146,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  passengerBox: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-
-  tripBox: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-
-  startBtn: {
-    backgroundColor: '#2e7d32',
-    padding: 10,
-    borderRadius: 6,
-  },
-
-  studentCard: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 12,
-    marginHorizontal: 20,
-    elevation: 2,
-  },
-
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  studentStatus: {
-    marginTop: 4,
-  },
-
-  btnRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-
-  pickBtn: {
-    backgroundColor: '#2196f3',
-    padding: 8,
-    borderRadius: 6,
-    marginRight: 10,
-  },
-
-  dropBtn: {
-    backgroundColor: '#f44336',
-    padding: 8,
-    borderRadius: 6,
-  },
-
   btnText: {
     color: '#fff',
     textAlign: 'center',
@@ -253,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#717171ff',
+    color: '#717171',
   },
 
   goOnlineBtn: {
@@ -262,6 +164,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 8,
   },
+
   offlineContainer: {
     position: 'absolute',
     top: 0,
