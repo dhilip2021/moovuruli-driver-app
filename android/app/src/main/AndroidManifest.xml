@@ -1,10 +1,20 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.testing">
 
-    <!-- PERMISSIONS -->
+    <!-- INTERNET -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- LOCATION PERMISSIONS -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!-- BACKGROUND LOCATION (Android 10+) -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- GPS HARDWARE -->
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
 
     <application
         android:name=".MainApplication"
@@ -16,10 +26,15 @@
         android:usesCleartextTraffic="true"
         android:supportsRtl="true">
 
-        <!-- GOOGLE MAP API KEY -->
+        <!-- GOOGLE MAPS API KEY -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyB_KfD6UsYVonKxXftUPwh7FebnIjrk-N8"/>
+            android:value="AIzaSyB_KfD6UsYVonKxXftUPwh7FebnIjrk-N8" />
+
+        <!-- MAPS VERSION (IMPORTANT) -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name=".MainActivity"

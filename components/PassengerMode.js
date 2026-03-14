@@ -5,7 +5,6 @@ import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 export default function PassengerMode({ mode }) {
-
   const mapRef = useRef(null);
   const watchId = useRef(null);
 
@@ -17,13 +16,11 @@ export default function PassengerMode({ mode }) {
   const [heading, setHeading] = useState(0);
 
   const startTracking = () => {
-
     watchId.current = Geolocation.watchPosition(
       position => {
-
         const { latitude, longitude, heading } = position.coords;
 
-        console.log("GPS UPDATE:", latitude, longitude);
+        console.log('GPS UPDATE:', latitude, longitude);
 
         const newLocation = {
           latitude,
@@ -32,7 +29,7 @@ export default function PassengerMode({ mode }) {
 
         setDriverLocation(newLocation);
 
-        setHeading(heading ? Number(heading) : 0);
+        setHeading(typeof heading === 'number' ? heading : 0);
 
         if (mapRef.current) {
           mapRef.current.animateCamera({
@@ -40,10 +37,9 @@ export default function PassengerMode({ mode }) {
             zoom: 17,
           });
         }
-
       },
       error => {
-        console.log("GPS ERROR:", error);
+        console.log('GPS ERROR:', error);
       },
       {
         enableHighAccuracy: true,
@@ -52,32 +48,28 @@ export default function PassengerMode({ mode }) {
         fastestInterval: 1000,
         forceRequestLocation: true,
         showLocationDialog: true,
-      }
+      },
     );
   };
 
   useEffect(() => {
-
     const requestLocationPermission = async () => {
-
       try {
-
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
+        // const granted = await PermissionsAndroid.request(
+        //   PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        // );
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        ]);
 
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-
-          console.log("Location Permission Granted");
+          console.log('Location Permission Granted');
 
           startTracking();
-
         } else {
-
-          console.log("Location Permission Denied");
-
+          console.log('Location Permission Denied');
         }
-
       } catch (err) {
         console.log(err);
       }
@@ -88,20 +80,14 @@ export default function PassengerMode({ mode }) {
     }
 
     return () => {
-
       if (watchId.current !== null) {
-
         Geolocation.clearWatch(watchId.current);
-
       }
-
     };
-
   }, [mode]);
 
   return (
     <View style={{ flex: 1 }}>
-
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
@@ -115,26 +101,24 @@ export default function PassengerMode({ mode }) {
           longitudeDelta: 0.01,
         }}
       >
-
-        <Marker
-          coordinate={driverLocation}
-          rotation={heading}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
+        {driverLocation && (
+          <Marker
+            coordinate={driverLocation}
+            rotation={heading}
+            anchor={{ x: 0.5, y: 0.5 }}
+          />
+        )}
       </MapView>
 
       <View style={styles.container}>
         <Text style={styles.title}>Passenger Mode Active</Text>
         <Text>Waiting for ride requests...</Text>
       </View>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     position: 'absolute',
     top: 100,
@@ -150,5 +134,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
-
 });
