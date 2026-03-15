@@ -8,8 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- BACKGROUND LOCATION (Android 10+) -->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- OPTIONAL: Background location (enable later if needed) -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/> -->
 
     <!-- GPS HARDWARE -->
     <uses-feature
@@ -29,7 +29,7 @@
         <!-- GOOGLE MAPS API KEY -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyB_KfD6UsYVonKxXftUPwh7FebnIjrk-N8" />
+            android:value="AIzaSyBo0Sm8o4iWEeXnjjTGDO2v6N8_7R3m2gI" />
 
         <!-- MAPS VERSION (IMPORTANT) -->
         <meta-data

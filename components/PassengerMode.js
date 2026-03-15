@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import Geolocation from 'react-native-geolocation-service';
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
+import { View, Text, StyleSheet, PermissionsAndroid, Alert, Linking } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import DriverTracking from '../components/DriverTracking';
 
 export default function PassengerMode({ mode }) {
   const mapRef = useRef(null);
@@ -14,6 +17,32 @@ export default function PassengerMode({ mode }) {
   });
 
   const [heading, setHeading] = useState(0);
+
+
+const checkGPS = () => {
+  RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+    interval: 10000,
+    fastInterval: 5000,
+  })
+    .then(() => {
+      console.log("GPS Enabled");
+      startTracking();
+    })
+    .catch(err => {
+      console.log("GPS not enabled", err);
+
+      Alert.alert(
+        "GPS Required",
+        "Please enable location services to continue",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Open Settings", onPress: () => Linking.openSettings() },
+        ]
+      );
+    });
+};
+
+
 
   const startTracking = () => {
     watchId.current = Geolocation.watchPosition(
@@ -55,18 +84,18 @@ export default function PassengerMode({ mode }) {
   useEffect(() => {
     const requestLocationPermission = async () => {
       try {
-        // const granted = await PermissionsAndroid.request(
-        //   PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        // );
         const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
         ]);
 
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        if (
+          granted['android.permission.ACCESS_FINE_LOCATION'] === 'granted' &&
+          granted['android.permission.ACCESS_COARSE_LOCATION'] === 'granted'
+        ) {
           console.log('Location Permission Granted');
-
-          startTracking();
+          // startTracking();
+checkGPS();
         } else {
           console.log('Location Permission Denied');
         }
@@ -88,6 +117,7 @@ export default function PassengerMode({ mode }) {
 
   return (
     <View style={{ flex: 1 }}>
+    <DriverTracking />
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
